@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
+# Serve Moonlight 16B 4-bit on 1× RTX 3090 (24 GB VRAM).
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="${ROOT_DIR}/.venv"
-MODEL_DIR="${MODEL_DIR:-${ROOT_DIR}/models/kimi-k2.5-eagle3}"
+MODEL_DIR="${MODEL_DIR:-${ROOT_DIR}/models/Moonlight-16B-A3B-Instruct-bnb-4bit}"
 
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-30000}"
+CONTEXT_LENGTH="${CONTEXT_LENGTH:-8192}"
+MEM_FRACTION="${MEM_FRACTION:-0.90}"
 
 if [[ ! -f "${VENV_DIR}/bin/activate" ]]; then
   echo "ERROR: Run ./01-install.sh first." >&2
@@ -27,7 +30,7 @@ exec sglang serve \
   --model-path "${MODEL_DIR}" \
   --tp 1 \
   --trust-remote-code \
-  --dtype bfloat16 \
-  --mem-fraction-static 0.75 \
+  --mem-fraction-static "${MEM_FRACTION}" \
+  --context-length "${CONTEXT_LENGTH}" \
   --host "${HOST}" \
   --port "${PORT}"

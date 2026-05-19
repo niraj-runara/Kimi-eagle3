@@ -15,8 +15,6 @@ fi
 source "${VENV_DIR}/bin/activate"
 
 python -m pip install --upgrade pip wheel setuptools
-pip install "sglang>=0.5.8" "huggingface_hub[cli]>=0.26.0" "hf_transfer>=0.1.8"
-
-export HF_HUB_ENABLE_HF_TRANSFER=1
+pip install "sglang>=0.5.8" "huggingface_hub[cli]>=0.26.0" "bitsandbytes>=0.43.0"
 
 echo "Done. Next: ./02-download-models.sh"
