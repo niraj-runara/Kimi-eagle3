@@ -19,6 +19,7 @@ chmod +x 01-install.sh 02-download-models.sh 03-deploy.sh
 
 ./01-install.sh
 ./02-download-models.sh
+source .venv/bin/activate
 ./03-deploy.sh
 ```
 
