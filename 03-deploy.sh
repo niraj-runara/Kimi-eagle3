@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Serve moonshotai/Moonlight-16B-A3B-Instruct on 1× RTX 3090 (24 GB VRAM).
+# Serve moonshotai/Moonlight-16B-A3B-Instruct on 1× RTX A6000 (48 GB VRAM).
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,7 +9,7 @@ MODEL_DIR="${MODEL_DIR:-${ROOT_DIR}/models/Moonlight-16B-A3B-Instruct}"
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-30000}"
 CONTEXT_LENGTH="${CONTEXT_LENGTH:-8192}"
-MEM_FRACTION="${MEM_FRACTION:-0.85}"
+MEM_FRACTION="${MEM_FRACTION:-0.90}"
 
 if [[ ! -f "${VENV_DIR}/bin/activate" ]]; then
   echo "ERROR: Run ./01-install.sh first." >&2
