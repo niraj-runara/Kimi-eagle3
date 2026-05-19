@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit weights separately from serving.
+# Download moonshotai/Moonlight-16B-A3B-Instruct weights separately from serving.
 #
 # Defaults to a repo-local model directory so 03-deploy.sh can serve from disk
 # without implicitly downloading from Hugging Face.
@@ -7,8 +7,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="${ROOT_DIR}/.venv"
-MODEL_ID="${MODEL_ID:-slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit}"
-MODEL_DIR="${MODEL_DIR:-${ROOT_DIR}/models/Moonlight-16B-A3B-Instruct-bnb-4bit}"
+MODEL_ID="${MODEL_ID:-moonshotai/Moonlight-16B-A3B-Instruct}"
+MODEL_DIR="${MODEL_DIR:-${ROOT_DIR}/models/Moonlight-16B-A3B-Instruct}"
 REVISION="${REVISION:-}"
 
 if [[ -f "${VENV_DIR}/bin/activate" ]]; then

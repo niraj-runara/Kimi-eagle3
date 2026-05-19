@@ -1,20 +1,18 @@
-# Moonlight 16B (4-bit) on SGLang — RTX 3090
+# Moonlight 16B Instruct on SGLang — RTX 3090
 
-Scripts to install SGLang, download [slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit](https://huggingface.co/slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit), and serve it on **1× NVIDIA RTX 3090 (24 GB VRAM)**.
+Scripts to install SGLang, download [moonshotai/Moonlight-16B-A3B-Instruct](https://huggingface.co/moonshotai/Moonlight-16B-A3B-Instruct), and serve it on **1× NVIDIA RTX 3090 (24 GB VRAM)**.
 
 ## Requirements
 
 - **GPU**: **NVIDIA RTX 3090** (24 GB VRAM), driver + CUDA 12+
 - **OS**: Linux (recommended)
 - **Python**: 3.10 or newer
-- **Disk**: ~15 GB free for the 4-bit weights
+- **Disk**: ~35 GB free for BF16 weights
 - **PSU / cooling**: 3090 is ~350 W; ensure adequate power and airflow
 
-This model uses ~8–10 GB for weights; on a 3090 the rest of VRAM is available for KV cache and longer context.
+16B MoE (~3B active per token). SGLang loads experts efficiently; 24 GB is enough for serving with the defaults below.
 
 ## Quick start
-
-Run these in order from the project root:
 
 ```bash
 chmod +x 01-install.sh 02-download-models.sh 03-deploy.sh
@@ -24,17 +22,17 @@ chmod +x 01-install.sh 02-download-models.sh 03-deploy.sh
 ./03-deploy.sh
 ```
 
-The server listens on **http://0.0.0.0:30000** (OpenAI-compatible API at `/v1`).
+Server: **http://0.0.0.0:30000** (`/v1` OpenAI-compatible API).
 
-Default deploy settings (`03-deploy.sh`): **8k context**, **90% static memory** for KV cache — comfortable on 24 GB.
+Defaults in `03-deploy.sh`: **8k context** (model max), **BF16**, **85% static memory**.
 
 ## What each script does
 
 | Script | Purpose |
 |--------|---------|
-| `01-install.sh` | Creates `.venv` and installs SGLang, `bitsandbytes`, and the `hf` CLI |
-| `02-download-models.sh` | Runs `hf download` into `models/Moonlight-16B-A3B-Instruct-bnb-4bit/` |
-| `03-deploy.sh` | Starts `sglang serve` on GPU 0 (3090-tuned defaults) |
+| `01-install.sh` | Creates `.venv`, installs SGLang and the `hf` CLI |
+| `02-download-models.sh` | `hf download` → `models/Moonlight-16B-A3B-Instruct/` |
+| `03-deploy.sh` | `sglang serve` on GPU 0 |
 
 ## Test the server
 
@@ -46,7 +44,7 @@ curl http://127.0.0.1:30000/v1/models
 curl http://127.0.0.1:30000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit",
+    "model": "moonshotai/Moonlight-16B-A3B-Instruct",
     "messages": [{"role": "user", "content": "What is the capital of France?"}],
     "max_tokens": 256
   }'
@@ -56,14 +54,10 @@ curl http://127.0.0.1:30000/v1/chat/completions \
 
 ```bash
 HOST=127.0.0.1 PORT=8080 ./03-deploy.sh
-
-# Longer context (try 16384 if you have headroom; back off if OOM)
-CONTEXT_LENGTH=16384 ./03-deploy.sh
-
-# Another GPU in a multi-GPU box
+CONTEXT_LENGTH=4096 MEM_FRACTION=0.80 ./03-deploy.sh   # if OOM
 CUDA_VISIBLE_DEVICES=1 ./03-deploy.sh
 
-MODEL_ID=slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit \
+MODEL_ID=moonshotai/Moonlight-16B-A3B-Instruct \
 MODEL_DIR=/path/to/model \
 ./02-download-models.sh
 
@@ -81,15 +75,14 @@ source .venv/bin/activate
 
 | Problem | What to try |
 |---------|-------------|
-| `hf` not found | Run `./01-install.sh`, then `source .venv/bin/activate` |
-| Download fails | Check disk space and network; re-run `./02-download-models.sh` |
-| CUDA OOM | Lower `CONTEXT_LENGTH` or `MEM_FRACTION=0.85 ./03-deploy.sh` |
+| `hf` not found | `./01-install.sh`, then `source .venv/bin/activate` |
+| Download fails | Free disk space; re-run `./02-download-models.sh` |
+| CUDA OOM | `CONTEXT_LENGTH=4096 MEM_FRACTION=0.75 ./03-deploy.sh` |
 | Port in use | `PORT=30001 ./03-deploy.sh` |
-| Slow first load | Normal; 3090 is loading ~15 GB from disk into VRAM |
 
 ## About this model
 
-[slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit](https://huggingface.co/slowfastai/Moonlight-16B-A3B-Instruct-bnb-4bit) is a **4-bit bitsandbytes** quant of [moonshotai/Moonlight-16B-A3B-Instruct](https://huggingface.co/moonshotai/Moonlight-16B-A3B-Instruct) (16B MoE, ~3B active). The authors note these weights are for **personal testing only** — use with caution.
+[moonshotai/Moonlight-16B-A3B-Instruct](https://huggingface.co/moonshotai/Moonlight-16B-A3B-Instruct) is Moonshot’s **16B MoE instruct** model (~3B active params, **8K** context, BF16). Same architecture family as DeepSeek-V3; supported by SGLang per the [model card](https://huggingface.co/moonshotai/Moonlight-16B-A3B-Instruct).
 
 ## Layout
 
@@ -100,5 +93,5 @@ source .venv/bin/activate
 ├── 03-deploy.sh
 ├── .venv/
 └── models/
-    └── Moonlight-16B-A3B-Instruct-bnb-4bit/
+    └── Moonlight-16B-A3B-Instruct/
 ```
